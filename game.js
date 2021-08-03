@@ -291,9 +291,10 @@ peer.on('open', function(id) {
 });
 		peer.on('connection', function(c) {
 			clients.push(c);
+			recieveData(c);
 			scores.push(0);
 			turn.push(0);
-			//print(c.peer + " connected with me"); 
+			print(c.peer + " connected with me"); 
 		});		
 }
 
@@ -321,13 +322,33 @@ function openClient(){
 				//print(json);
 				let otherLetters = json.otherLetters;
 				if(otherLetters){
-				for(let i = 0; i < otherLetters.length;i++){
-					let l = new Letter(otherLetters[i].letter,otherLetters[i].point,otherLetters[i].number);
-					myLetters.push(l);
+					for(let i = 0; i < otherLetters.length;i++){
+						let l = new Letter(otherLetters[i].letter,otherLetters[i].point,otherLetters[i].number);
+						myLetters.push(l);
+					}
 				}
+//				print(json.i);
+			if(json.letterCounts){
+				print(json);
+				turn = json.turn;
+				letterCounts = json.letterCounts;
+				scores = json.scores;
+				myPos = json.i+1;
+				if(json.tiles){
+					for(let i = 0; i < json.tiles.length; i++){
+						if(json.tiles[i].letter){
+							tiles[i].setLetter(json.tiles[i].letter);
+						}
+		
+					}
 				}
-				
-//				myLetters = json.otherLetters;
+		if(turn && turn[myPos] == 1){
+			endTurnButton.show();	
+		}else{	
+			endTurnButton.hide();
+		}
+			}
+							
 
 			});
 			
@@ -341,12 +362,14 @@ function openClient(){
 
 function sendDataToClients(){
 	for(let i = 0; i < clients.length; i++){
+		print("ran");
 		clients[i].send(JSON.stringify({letterCounts,turn,scores,tiles,i}));
 		
 	}
 }
 
 function sendDataToServer(){
+	print("sent to server");
 	server.send(JSON.stringify({letterCounts,turn,scores,tiles}));
 }
 
@@ -445,6 +468,10 @@ function setup() {
   }
 	tiles[112].wordMult = 1;
 	tiles[112].letterMult = 1;
+	if(ifServer){
+		getDataFromClient();
+
+	}
 }
 
 function onBoard(posX,posY){
@@ -521,6 +548,7 @@ function getDataFromServer(){
 	server.on('data',function(data){
 		let json = JSON.parse(data);
 		turn = json.turn;
+		print("run");
 		print(json);
 		letterCounts = json.letterCounts;
 		scores = json.scores;
@@ -541,10 +569,9 @@ function getDataFromServer(){
 	});
 
 }
-
-function getDataFromClient(){
-	for(let i = 0; i < clients.length; i++){
-		clients[i].on('data',function(data){
+function recieveData(conn){
+	conn.on('data',function(data){
+			print("client");
 			let json = JSON.parse(data);
 			turn = json.turn;
 			letterCounts = json.letterCounts;
@@ -557,9 +584,34 @@ function getDataFromClient(){
 	
 				}
 			}
+			sendDataToClients();
+	if(turn[myPos] == 1){
+		endTurnButton.show();
+	}else{
+		endTurnButton.hide();
+	}
+
+		});
+}
+function getDataFromClient(){
+	for(let i = 0; i < clients.length; i++){
+		clients[i].on('data',function(data){
+			print("client");
+			let json = JSON.parse(data);
+			turn = json.turn;
+			letterCounts = json.letterCounts;
+			scores = json.scores;
+			if(json.tiles){
+				for(let i = 0; i < json.tiles.length; i++){
+					if(json.tiles[i].letter){
+						tiles[i].setLetter(json.tiles[i].letter);
+					}
+	
+				}
+			}
+			sendDataToClients();
 		});
 	}
-	sendDataToClients();
 	if(turn[myPos] == 1){
 		endTurnButton.show();
 	}else{
@@ -574,9 +626,9 @@ function draw() {
   //fill(219, 212, 195);
 
 	if(server){
-		getDataFromServer();
+//		getDataFromServer();
 	}else{
-		getDataFromClient();
+	//	getDataFromClient();
 	}
 	for(let i = 0; i < tiles.length;i++){
 		tiles[i].draw(padding,tileSize);
