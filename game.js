@@ -559,6 +559,7 @@ function getDataFromClient(){
 			}
 		});
 	}
+	sendDataToClients();
 	if(turn[myPos] == 1){
 		endTurnButton.show();
 	}else{
