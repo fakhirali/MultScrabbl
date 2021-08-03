@@ -7,12 +7,15 @@ figure out multiplayer
 */
 
 //multiplayer vars
-let turn = [1,0,0,0];
-let scores = [];
+let turn = [1];
+let scores = [0];
 let letterCounts = [2,9,2,2,4,12,2,3,2,9,1,1,4,2,6,8,2,1,6,4,6,4,2,2,1,2,1];
 let tiles = [];
-var peerid;
-
+let clients = [];
+let server;
+let serverId;
+let ifServer = false;
+let myPos = 0;
 //---------------
 let myLetters  = [];
 let allLetters = ' abcdefghijklmnopqrstuvwxyz';
@@ -30,15 +33,6 @@ let url;
 var peer = new Peer();
 
 
-peer.on('open', function(id) {
-	console.log('My peer ID is: ' + id);
-	ID = id;
-	el = createElement('h2',url.split("?")[0] + "?" + ID);
-	el.position(20, 5);
-});
-
-
-
 
 class Letter{
 	constructor(letter, point,number){
@@ -46,6 +40,8 @@ class Letter{
 		this.point = point;
 		this.number = number
 	}
+
+
 	draw(){
   		fill(219, 212, 195);
     	rect(50+(40*4)+(40* this.number),685-30,40,40);//my letters
@@ -116,13 +112,30 @@ function nextTurn(){
 	for(let i = 0; i < tilesChanged.length;i++){
 			for(let j = 0; j < 7; j++){
 				if(myLetters[j].letter == tiles[tilesChanged[i]].letter.letter){
-					myLetters[j].setLetter(makeLetter(j));
+					let newLetter = makeLetter(j);
+					while(newLetter == null){
+						newLetter = makeLetter(j);
+					}
+					myLetters[j].setLetter(newLetter);
 					break;
 				}
 			}
 	}
+	for(let i = 0;i < turn.length;i++){
+		if(turn[i] == 1){
+			turn[i] = 0;
+			turn[(i+1)%turn.length] = 1;
+			break;
+		}
+	}
+	if(ifServer){
+		sendDataToClients();
+	}else{
+		sendDataToServer();
+	}
 	lettersUsed = [];
 	tilesChanged = [];
+	endTurnButton.hide();
 }
 
 function keyPressed() {
@@ -162,7 +175,7 @@ async function checkWords(){
 				if(word.length > 1){
 					const res = await fetch("https://api.dictionaryapi.dev/api/v2/entries/en_US/" + word);
 					
-					print(res.status);
+					//print(res.status);
 					ifWord = res.status;
 					if(ifWord != 404){
 						if(changedWord){
@@ -204,7 +217,7 @@ async function checkWords(){
 				if(word.length > 1){
 					const res = await fetch("https://api.dictionaryapi.dev/api/v2/entries/en_US/" + word);
 					
-					print(res.status);
+					//print(res.status);
 					ifWord = res.status;
 					if(ifWord != 404){
 						if(changedWord){
@@ -225,7 +238,7 @@ async function checkWords(){
 		}
 	}
 
-	print("next turn");
+	//print("next turn");
 	nextTurn();
 }
 
@@ -256,67 +269,134 @@ function star(x, y, radius1, radius2, npoints) {
 }
 
 function makeLetter(i){
+	
 	let rndNum = int(random(27));
-    let letter = allLetters[rndNum];
+	while(letterCounts[rndNum] <= 0){
+		rndNum = int(random(27));
+	}
+	let letter = allLetters[rndNum];
     letterCounts[rndNum] -= 1;
 	return new Letter(letter, letterPoints[rndNum],i);
+
 }
 
 
+function openServer(){
+	ifServer = true;
+peer.on('open', function(id) {
+	console.log('My peer ID is: ' + id);
+	ID = id;
+	el = createElement('h2',url.split("?")[0] + "?" + ID);
+	el.position(20, 5);
+});
+		peer.on('connection', function(c) {
+			clients.push(c);
+			scores.push(0);
+			turn.push(0);
+			//print(c.peer + " connected with me"); 
+		});		
+}
 
-function setup() {
-  url = getURL();
-	if (url.split("?").length > 1){
-		isGreen = true;
+
+function openClient(){
+	ifServer = false;
 		peer.on('open', function(){
 	
-			conn = peer.connect(url.split("?")[1],{
+			server = peer.connect(url.split("?")[1],{
 				reliable: false
 			});
-			conn.on('open', function() {
-				peerid = conn.peer;
-				print("Connected with " + peerid);
+			server.on('open', function() {
+				serverId = server.peer;
+				//print("Connected with " + serverId);
 
 			});
 					
-			conn.on('error', function(err){
-				print("error");
+			server.on('error', function(err){
+				//print("error");
 				print(err);
 			});
-			
+			server.on('data', function(data){
+				//start client game
+				let json = JSON.parse(data);
+				//print(json);
+				let otherLetters = json.otherLetters;
+				if(otherLetters){
+				for(let i = 0; i < otherLetters.length;i++){
+					let l = new Letter(otherLetters[i].letter,otherLetters[i].point,otherLetters[i].number);
+					myLetters.push(l);
+				}
+				}
+				
+//				myLetters = json.otherLetters;
+
+			});
 			
 		});
 		
 
-	}else{
 
-		peer.on('connection', function(c) {
-			conn = c;
-			peerid = conn.peer;
-			print(peerid + " connected with me"); 
-		});
+}
 
+
+
+function sendDataToClients(){
+	for(let i = 0; i < clients.length; i++){
+		clients[i].send(JSON.stringify({letterCounts,turn,scores,tiles,i}));
 		
+	}
+}
+
+function sendDataToServer(){
+	server.send(JSON.stringify({letterCounts,turn,scores,tiles}));
+}
+
+
+function startGame(){
+	//make my letters
+	for(let i = 0;i<7;i++){
+		let letterObj = makeLetter(i);
+	    myLetters.push(letterObj);
+	}
+	//send data for then to make their letters
+	for(let i = 0;i < clients.length;i++){
+		//make letters for others
+		let otherLetters = [];
+		for(let i = 0;i<7;i++){
+			let letterObj = makeLetter(i);
+			otherLetters.push(letterObj);
+		}
+		clients[i].send(JSON.stringify({otherLetters}))
+	}
+	endTurnButton.show();
+	startGameBtn.hide();
+
+}
+
+function setup() {
+//resolve networking
+  url = getURL();
+	if (url.split("?").length > 1){//if it is a client link
+		openClient();
+	}else{//if it is a server link
+		openServer();
 	}	
 
-if(url.split("?").length > 1){
-	var conn = peer.connect(url.split("?")[1]);
-	print("connecting");
-}
   cnv = createCanvas(700, 700);
   cx = (windowWidth - width) / 2;
   cy = (windowHeight - height) / 2;
-  //print(cx,cy);
   cnv.position(cx, cy);
   endTurnButton = createButton('end turn');
   endTurnButton.position(cx+50+(40*4)+(40* 10),655+cy);
   endTurnButton.mousePressed(checkWords);
-
-
-  for(let i = 0;i<7;i++){
-	let letterObj = makeLetter(i);
-    myLetters.push(letterObj);
+  endTurnButton.hide();
+  if(ifServer){
+  	startGameBtn = createButton('start game');
+  	startGameBtn.position(50,100);
+  	startGameBtn.mousePressed(startGame);
   }
+
+//making letters
+
 //  print(letterCounts);
 //  print(allLetters);
 //  print(myLetters);
@@ -404,10 +484,11 @@ function validPlacement(tileNum){
 function mousePressed(){
 	if(onBoard(mouseX,mouseY)){
 		//placing letter
+//		print("on board");
 		tilePos = getTilePosition(mouseX,mouseY);
 		tileNum = getTileNumber(tilePos);
-		print(tileNum);
 		if(selectedLetter != null && tiles[tileNum].letter == null && validPlacement(tileNum)){
+			//print(tileNum);
 			tiles[tileNum].setLetter(selectedLetter);
 			tilesChanged.push(tileNum);
 			
@@ -424,7 +505,7 @@ function mousePressed(){
 		for(let i = 0; i < lettersUsed.length; i++){
 			if(lNum == lettersUsed[i]){
 				used = true;
-				break
+				break;
 			}
 		}
 		if(!used){
@@ -436,11 +517,66 @@ function mousePressed(){
 }
 
 
+function getDataFromServer(){
+	server.on('data',function(data){
+		let json = JSON.parse(data);
+		turn = json.turn;
+		print(json);
+		letterCounts = json.letterCounts;
+		scores = json.scores;
+		myPos = json.i+1;
+		if(json.tiles){
+			for(let i = 0; i < json.tiles.length; i++){
+				if(json.tiles[i].letter){
+					tiles[i].setLetter(json.tiles[i].letter);
+				}
+
+			}
+		}
+		if(turn && turn[myPos] == 1){
+			endTurnButton.show();	
+		}else{	
+			endTurnButton.hide();
+		}
+	});
+
+}
+
+function getDataFromClient(){
+	for(let i = 0; i < clients.length; i++){
+		clients[i].on('data',function(data){
+			let json = JSON.parse(data);
+			turn = json.turn;
+			letterCounts = json.letterCounts;
+			scores = json.scores;
+			if(json.tiles){
+				for(let i = 0; i < json.tiles.length; i++){
+					if(json.tiles[i].letter){
+						tiles[i].setLetter(json.tiles[i].letter);
+					}
+	
+				}
+			}
+		});
+	}
+	if(turn[myPos] == 1){
+		endTurnButton.show();
+	}else{
+		endTurnButton.hide();
+	}
+}
+
+
+
 function draw() {
   background(220);
   //fill(219, 212, 195);
- 
 
+	if(server){
+		getDataFromServer();
+	}else{
+		getDataFromClient();
+	}
 	for(let i = 0; i < tiles.length;i++){
 		tiles[i].draw(padding,tileSize);
 	}
@@ -448,16 +584,19 @@ function draw() {
       star(7*40+20+50,7*40+20+50,20,8,5);
 */
 
-  for(let i = 0; i < 7; i++){
+  for(let i = 0; i < myLetters.length; i++){
   	fill(219, 212, 195);
 //    rect(50+(40*4)+(40* i),655,40,40);//my letters
     
 	rect(5,50+(40*4)+(40* i),40,40);  
     rect(655,50+(40*4)+(40* i),40,40);  
     rect(50+(40*4)+(40* i),5,40,40);
-	myLetters[i].draw();
+	if(myLetters[i]){
+		myLetters[i].draw();
+	}
 	textSize(32);
   }
+	textSize(32);
 	text(myScore, 50+(40*4)+(40* 8),685);
 	
 
