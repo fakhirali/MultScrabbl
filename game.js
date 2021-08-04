@@ -16,8 +16,11 @@ let server;
 let serverId;
 let ifServer = false;
 let myPos = 0;
+let myName;
+let names = [];
 //---------------
 let myLetters  = [];
+let namePos = [[150,675],[0,150],[150,25],[650,150]];
 let allLetters = ' abcdefghijklmnopqrstuvwxyz';
 let letterPoints = [0,1,3,3,2,1,4,2,4,1,8,5,1,3,1,1,3,10,1,1,1,1,4,4,8,4,10]
 let myScore = 0;
@@ -30,7 +33,7 @@ let dictionary = [];
 let tilesChanged = [];
 let lettersUsed = [];
 let url;
-var peer = new Peer();
+var peer;
 
 
 
@@ -294,6 +297,7 @@ peer.on('open', function(id) {
 			recieveData(c);
 			scores.push(0);
 			turn.push(0);
+			names.push(c.peer);
 			print(c.peer + " connected with me"); 
 		});		
 }
@@ -321,10 +325,23 @@ function openClient(){
 				let json = JSON.parse(data);
 				//print(json);
 				let otherLetters = json.otherLetters;
+				let otherNames = json.names;
 				if(otherLetters){
 					for(let i = 0; i < otherLetters.length;i++){
 						let l = new Letter(otherLetters[i].letter,otherLetters[i].point,otherLetters[i].number);
 						myLetters.push(l);
+					}
+				}
+				if(otherNames){
+					names = otherNames;
+					for(let i = 0; i < otherNames.length; i++){
+						while(names[0] != myName){
+							for(let j = 0; j < names.length-1;j++){
+								let temp = names[j];
+								names[j] = names[j+1];
+								names[j+1] = temp; 
+							}
+						}
 					}
 				}
 //				print(json.i);
@@ -388,22 +405,40 @@ function startGame(){
 			let letterObj = makeLetter(i);
 			otherLetters.push(letterObj);
 		}
-		clients[i].send(JSON.stringify({otherLetters}))
+		clients[i].send(JSON.stringify({otherLetters,names}))
 	}
 	endTurnButton.show();
 	startGameBtn.hide();
 
 }
 
-function setup() {
-//resolve networking
+function setName(){
+  myName = input.value();
+  input.value('');
+  peer = new Peer(myName);
+  names.push(myName);
   url = getURL();
 	if (url.split("?").length > 1){//if it is a client link
 		openClient();
 	}else{//if it is a server link
 		openServer();
+  	startGameBtn = createButton('start game');
+  	startGameBtn.position(50,100);
+  	startGameBtn.mousePressed(startGame);
 	}	
+	input.remove();
+	button.remove();
 
+}
+
+
+function setup() {
+//resolve networking
+  input = createInput();
+  input.position(20, 65);
+  button = createButton('submit');
+  button.position(input.x + input.width, 65);
+  button.mousePressed(setName);
   cnv = createCanvas(700, 700);
   cx = (windowWidth - width) / 2;
   cy = (windowHeight - height) / 2;
@@ -412,6 +447,7 @@ function setup() {
   endTurnButton.position(cx+50+(40*4)+(40* 10),655+cy);
   endTurnButton.mousePressed(checkWords);
   endTurnButton.hide();
+
   if(ifServer){
   	startGameBtn = createButton('start game');
   	startGameBtn.position(50,100);
@@ -509,6 +545,7 @@ function validPlacement(tileNum){
 
 
 function mousePressed(){
+//	print(mouseX,mouseY);
 	if(onBoard(mouseX,mouseY)){
 		//placing letter
 //		print("on board");
@@ -657,7 +694,16 @@ function draw() {
 	if(selectedLetter != null){
 		selectedLetter.highlight();
 	}
-
+	textSize(20);
+	for(let i = 0; i < names.length;i++){
+		print(turn);
+		if(turn[(i+myPos)%turn.length] == 1){
+			fill(255,0,0);
+		}else{
+			fill(0,0,0);
+		}
+		text(names[i],namePos[i][0],namePos[i][1]);	
+	}
 
   //letters[0] = 'd';
   //print(letters);
