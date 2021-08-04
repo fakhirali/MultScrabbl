@@ -21,6 +21,7 @@ let names = [];
 //---------------
 let myLetters  = [];
 let namePos = [[150,675],[0,150],[150,25],[650,150]];
+let scoresPos = [[100,675],[0,100],[100,25],[650,100]];
 let allLetters = ' abcdefghijklmnopqrstuvwxyz';
 let letterPoints = [0,1,3,3,2,1,4,2,4,1,8,5,1,3,1,1,3,10,1,1,1,1,4,4,8,4,10]
 let myScore = 0;
@@ -111,6 +112,7 @@ function resetTiles(){
 
 function nextTurn(){
 	myScore += tempScore;
+	scores[myPos] = myScore;
 	tempScore = 0;
 	for(let i = 0; i < tilesChanged.length;i++){
 			for(let j = 0; j < 7; j++){
@@ -346,7 +348,7 @@ function openClient(){
 				}
 //				print(json.i);
 			if(json.letterCounts){
-				print(json);
+				//print(json);
 				turn = json.turn;
 				letterCounts = json.letterCounts;
 				scores = json.scores;
@@ -379,14 +381,14 @@ function openClient(){
 
 function sendDataToClients(){
 	for(let i = 0; i < clients.length; i++){
-		print("ran");
+		//print("ran");
 		clients[i].send(JSON.stringify({letterCounts,turn,scores,tiles,i}));
 		
 	}
 }
 
 function sendDataToServer(){
-	print("sent to server");
+	//print("sent to server");
 	server.send(JSON.stringify({letterCounts,turn,scores,tiles}));
 }
 
@@ -585,8 +587,8 @@ function getDataFromServer(){
 	server.on('data',function(data){
 		let json = JSON.parse(data);
 		turn = json.turn;
-		print("run");
-		print(json);
+		//print("run");
+		//print(json);
 		letterCounts = json.letterCounts;
 		scores = json.scores;
 		myPos = json.i+1;
@@ -608,7 +610,7 @@ function getDataFromServer(){
 }
 function recieveData(conn){
 	conn.on('data',function(data){
-			print("client");
+			//print("client");
 			let json = JSON.parse(data);
 			turn = json.turn;
 			letterCounts = json.letterCounts;
@@ -633,7 +635,7 @@ function recieveData(conn){
 function getDataFromClient(){
 	for(let i = 0; i < clients.length; i++){
 		clients[i].on('data',function(data){
-			print("client");
+			//print("client");
 			let json = JSON.parse(data);
 			turn = json.turn;
 			letterCounts = json.letterCounts;
@@ -696,13 +698,16 @@ function draw() {
 	}
 	textSize(20);
 	for(let i = 0; i < names.length;i++){
-		print(turn);
+		//print(scores,myPos);
 		if(turn[(i+myPos)%turn.length] == 1){
 			fill(255,0,0);
 		}else{
 			fill(0,0,0);
 		}
 		text(names[i],namePos[i][0],namePos[i][1]);	
+		fill(0,0,0);
+		text(scores[(i+myPos)%scores.length],scoresPos[i][0],scoresPos[i][1]);	
+
 	}
 
   //letters[0] = 'd';
