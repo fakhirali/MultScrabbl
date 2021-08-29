@@ -537,12 +537,24 @@ function isLetter(posX,posY){
 
 
 function validPlacement(tileNum){
-	let c1 = tiles[tileNum+1].letter != null;
-	let c2 = tiles[tileNum-1].letter != null;
-	let c3 = tiles[tileNum-15].letter != null;
-	let c4 = tiles[tileNum+15].letter != null;
-	let c5 = tileNum == 112;
-	return c1 || c2 || c3 || c4 || c5;
+        let c1 = tiles[tileNum+1].letter != null;
+        let c2 = tiles[tileNum-1].letter != null;
+        let c3 = true;
+        if(225 - tileNum <= 15){
+                c3 = false;
+        }else{
+                c3 = tiles[tileNum+15].letter != null;
+        }
+        let c4 = true;
+        if(tileNum <= 15){
+                c4 = false;
+
+        }else{
+                c4 = tiles[tileNum-15].letter != null;
+        }
+        let c5 = tileNum == 112;
+        return c1 || c2  || c3 || c4 || c5;
+
 }
 
 
