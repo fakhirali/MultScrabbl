@@ -560,7 +560,8 @@ function validPlacement(tileNum){
 
 function mousePressed(){
 //	print(mouseX,mouseY);
-	if(onBoard(mouseX,mouseY)){
+
+	if(onBoard(mouseX,mouseY) && turn && turn[myPos] == 1){
 		//placing letter
 //		print("on board");
 		tilePos = getTilePosition(mouseX,mouseY);
