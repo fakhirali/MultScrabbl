@@ -26,6 +26,7 @@ let allLetters = ' abcdefghijklmnopqrstuvwxyz';
 let letterPoints = [0,1,3,3,2,1,4,2,4,1,8,5,1,3,1,1,3,10,1,1,1,1,4,4,8,4,10]
 let myScore = 0;
 let tempScore = 0;
+let checking = false;
 let padding = 50;
 let tileSize = 40;
 let selectedLetter = null;
@@ -100,6 +101,7 @@ class Tile{
 //resets tiles if word is wrong
 function resetTiles(){
 //	print(tilesChanged);
+	checking = false;
 	tempScore = 0;
 	for(let i = 0;i < tilesChanged.length; i++){
 //		print(tiles[tilesChanged[i]].letter);
@@ -111,6 +113,7 @@ function resetTiles(){
 }
 
 function nextTurn(){
+	checking = false;
 	myScore += tempScore;
 	scores[myPos] = myScore;
 	tempScore = 0;
@@ -157,6 +160,7 @@ async function checkWords(){
 	/*if(tilesChanged.length == 0){
 		return;
 	}*/
+	checking = true;
 	let alone = [];
 	for(let i = 0; i < 15;i++){
 		let word = "";
@@ -562,7 +566,7 @@ function validPlacement(tileNum){
 function mousePressed(){
 //	print(mouseX,mouseY);
 
-	if(onBoard(mouseX,mouseY) && turn && turn[myPos] == 1){
+	if(onBoard(mouseX,mouseY) && turn && turn[myPos] == 1 && !checking){
 		//placing letter
 //		print("on board");
 		tilePos = getTilePosition(mouseX,mouseY);
