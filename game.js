@@ -222,7 +222,7 @@ async function checkWords(){
 				if(word.length > 1){
 					const res = await fetch("https://api.dictionaryapi.dev/api/v2/entries/en_US/" + word);
 					
-					//print(res.status);
+					print(res.status, word);
 					ifWord = res.status;
 					if(ifWord != 404){
 						if(changedWord){
