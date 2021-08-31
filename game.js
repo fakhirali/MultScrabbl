@@ -1,9 +1,4 @@
 /*TODO 
---place letters--
---Check for words probably file handling--
---count score ez--
-figure out multiplayer
-
 */
 
 //multiplayer vars
@@ -155,20 +150,22 @@ function keyPressed() {
 }
 
 
+
+
+
 async function checkWords(){
 	//check is there is a valid word
 	/*if(tilesChanged.length == 0){
 		return;
 	}*/
 	checking = true;
-	let alone = [];
 	for(let i = 0; i < 15;i++){
 		let word = "";
 		let changedWord = false;
 		let wordScore = 0;
 		let wordMults = 1;
 		for(let j = 0; j < 15; j++){
-			if(tiles[(i*15) +j].letter != null){
+			if(tiles[(i*15) +j].letter != null && j != 14){
 				word += tiles[(i*15) +j].letter.letter;
 				wordScore += tiles[(i*15) +j].letter.point * tiles[(i*15) +j].letterMult;
 				wordMults *= tiles[(i*15) +j].wordMult;
@@ -211,7 +208,7 @@ async function checkWords(){
 		let wordScore = 0;
 		let wordMults = 1;
 		for(let j = 0; j < 15; j++){
-			if(tiles[(j*15) +i].letter != null){
+			if(tiles[(j*15) +i].letter != null && j != 14){
 				word += tiles[(j*15) +i].letter.letter;
 				wordScore += tiles[(j*15) +i].letter.point * tiles[(j*15) +i].letterMult;
 				wordMults *= tiles[(j*15) +i].wordMult;
@@ -240,6 +237,7 @@ async function checkWords(){
 						return;
 					}
 				}
+
 				word = "";
 				wordScore = 0;
 				wordMults = 1;
