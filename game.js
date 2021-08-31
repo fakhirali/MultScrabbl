@@ -104,6 +104,7 @@ function resetTiles(){
 	}	
 	tilesChanged = [];
 	lettersUsed = [];
+	endTurnButton.show();
 	//print(tilesChanged);
 }
 
@@ -158,6 +159,7 @@ async function checkWords(){
 	/*if(tilesChanged.length == 0){
 		return;
 	}*/
+	endTurnButton.hide();
 	checking = true;
 	for(let i = 0; i < 15;i++){
 		let word = "";
