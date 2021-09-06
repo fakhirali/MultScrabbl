@@ -1,4 +1,5 @@
 /*TODO 
+ * end condition
 */
 
 //multiplayer vars
