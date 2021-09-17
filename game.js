@@ -5,8 +5,8 @@
 //multiplayer vars
 let turn = [1];
 let scores = [0];
-//let letterCounts = [2,9,2,2,4,12,2,3,2,9,1,1,4,2,6,8,2,1,6,4,6,4,2,2,1,2,1];
-let letterCounts = [2,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+let letterCounts = [2,9,2,2,4,12,2,3,2,9,1,1,4,2,6,8,2,1,6,4,6,4,2,2,1,2,1];
+//let letterCounts = [2,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
 let tiles = [];
 let clients = [];
 let server;
