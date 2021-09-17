@@ -5,7 +5,8 @@
 //multiplayer vars
 let turn = [1];
 let scores = [0];
-let letterCounts = [2,9,2,2,4,12,2,3,2,9,1,1,4,2,6,8,2,1,6,4,6,4,2,2,1,2,1];
+//let letterCounts = [2,9,2,2,4,12,2,3,2,9,1,1,4,2,6,8,2,1,6,4,6,4,2,2,1,2,1];
+let letterCounts = [2,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
 let tiles = [];
 let clients = [];
 let server;
@@ -66,6 +67,8 @@ class Letter{
 
 }
 
+
+
 class Tile{
 	constructor(posX,posY,wordMult,letterMult,tileColor){
 		this.posX = posX;
@@ -114,6 +117,11 @@ function nextTurn(){
 	myScore += tempScore;
 	scores[myPos] = myScore;
 	tempScore = 0;
+	if (isGameOver()){
+		el = createElement('h2',"Game Over!");
+		el.position(20, 50);
+		return;
+	}
 	for(let i = 0; i < tilesChanged.length;i++){
 			for(let j = 0; j < 7; j++){
 				if(myLetters[j].letter == tiles[tilesChanged[i]].letter.letter){
@@ -249,8 +257,9 @@ async function checkWords(){
 		}
 	}
 
-	//print("next turn");
 	nextTurn();
+	//print("next turn");
+
 }
 
 
@@ -279,14 +288,20 @@ function star(x, y, radius1, radius2, npoints) {
   endShape(CLOSE);
 }
 
-function makeLetter(i){
+function isGameOver(){
+	return sum(letterCounts) == 0;
 	
+}
+
+function makeLetter(i){
+	print("is the game over?");
+	print(isGameOver());
 	let rndNum = int(random(27));
 	while(letterCounts[rndNum] <= 0){
 		rndNum = int(random(27));
 	}
 	let letter = allLetters[rndNum];
-    letterCounts[rndNum] -= 1;
+	letterCounts[rndNum] -= 1;
 	return new Letter(letter, letterPoints[rndNum],i);
 
 }
@@ -392,6 +407,7 @@ function sendDataToClients(){
 		
 	}
 }
+
 
 function sendDataToServer(){
 	//print("sent to server");
