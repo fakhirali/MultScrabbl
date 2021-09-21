@@ -3,7 +3,7 @@
 */
 
 //multiplayer vars
-let turn = [1];
+let turn = [0];
 let scores = [0];
 let letterCounts = [2,9,2,2,4,12,2,3,2,9,1,1,4,2,6,8,2,1,6,4,6,4,2,2,1,2,1];
 //let letterCounts = [2,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
@@ -309,6 +309,7 @@ function makeLetter(i){
 
 function openServer(){
 	ifServer = true;
+turn = [1];
 peer.on('open', function(id) {
 	console.log('My peer ID is: ' + id);
 	ID = id;
@@ -335,7 +336,7 @@ function openClient(){
 			});
 			server.on('open', function() {
 				serverId = server.peer;
-				//print("Connected with " + serverId);
+				print("Connected with " + serverId);
 
 			});
 					
@@ -346,7 +347,7 @@ function openClient(){
 			server.on('data', function(data){
 				//start client game
 				let json = JSON.parse(data);
-				//print(json);
+				print(json);
 				let otherLetters = json.otherLetters;
 				let otherNames = json.names;
 				if(otherLetters){
@@ -382,6 +383,7 @@ function openClient(){
 		
 					}
 				}
+		print(turn);
 		if(turn && turn[myPos] == 1){
 			endTurnButton.show();	
 		}else{	
@@ -623,7 +625,7 @@ function getDataFromServer(){
 		let json = JSON.parse(data);
 		turn = json.turn;
 		//print("run");
-		//print(json);
+		print(json);
 		letterCounts = json.letterCounts;
 		scores = json.scores;
 		myPos = json.i+1;
@@ -650,6 +652,7 @@ function recieveData(conn){
 			turn = json.turn;
 			letterCounts = json.letterCounts;
 			scores = json.scores;
+			print(json);
 			if(json.tiles){
 				for(let i = 0; i < json.tiles.length; i++){
 					if(json.tiles[i].letter){
@@ -698,7 +701,6 @@ function getDataFromClient(){
 function draw() {
   background(220);
   //fill(219, 212, 195);
-
 	if(server){
 //		getDataFromServer();
 	}else{
