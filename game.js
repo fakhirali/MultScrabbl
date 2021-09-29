@@ -33,69 +33,6 @@ let lettersUsed = [];
 let url;
 var peer;
 
-
-
-class Letter{
-	constructor(letter, point,number){
-		this.letter = letter;
-		this.point = point;
-		this.number = number
-	}
-
-
-	draw(){
-  		fill(219, 212, 195);
-    	rect(50+(40*4)+(40* this.number),685-30,40,40);//my letters
-		fill(0,0,0);
-    	textSize(32);
-		text(this.letter,50+(40*4)+(40* this.number)+5,685);
-	    textSize(10);
-		text(this.point,50+(40*4)+(40* this.number)+27,685+10);
-	}
-	highlight(){
-		noFill();
-		rect(50+(40*4)+(40* this.number),685-30,40,40);//my letters
-	}
-
-	setLetter(l){
-		this.letter = l.letter;
-		this.point = l.point;
-		this.number = l.number
-
-	}
-
-}
-
-
-
-class Tile{
-	constructor(posX,posY,wordMult,letterMult,tileColor){
-		this.posX = posX;
-		this.posY = posY;
-		this.wordMult = wordMult;
-		this.letterMult = letterMult;
-		this.tileColor = tileColor;
-		this.letter = null;
-	}
-
-	draw(padding,size){
-		fill(this.tileColor)
-		rect(this.posX*size+padding,this.posY*size+padding,size,size);
-		if(this.letter != null){
-			fill(0,0,0);
-    		textSize(32);
-			text(this.letter.letter,this.posX*size+padding+5,this.posY*size+padding+40-10);
-		    textSize(10);
-			text(this.letter.point,this.posX*size+padding+27,this.posY*size+padding+40-5);
-		}
-	}
-
-	setLetter(letter){
-		this.letter = new Letter(letter.letter, letter.point,letter.number); 
-//		this.letter = letter;
-	}
-}
-
 //resets tiles if word is wrong
 function resetTiles(){
 //	print(tilesChanged);
