@@ -6,5 +6,4 @@ class PlayerData{
         this.myScore = 0;
     }
 
-
 }
