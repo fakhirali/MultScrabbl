@@ -1,4 +1,7 @@
 /*TODO 
+Make GameServer work
+Left off at sendData to Players
+
 */
 
 //multiplayer vars
@@ -34,6 +37,7 @@ let url;
 var peer;
 
 //resets tiles if word is wrong
+//Board Class
 function resetTiles(){
 //	print(tilesChanged);
 	checking = false;
@@ -47,7 +51,7 @@ function resetTiles(){
 	endTurnButton.show();
 	//print(tilesChanged);
 }
-
+//Player Class
 function nextTurn(){
 	checking = false;
 	myScore += tempScore;
@@ -86,7 +90,7 @@ function nextTurn(){
 	tilesChanged = [];
 	endTurnButton.hide();
 }
-
+//Player Class
 function keyPressed() {
 	if(selectedLetter != null){
 		if(selectedLetter.letter == ' '){
@@ -98,7 +102,7 @@ function keyPressed() {
 
 
 
-
+//Board Class
 async function checkWords(){
 	//check is there is a valid word
 	/*if(tilesChanged.length == 0){
@@ -199,7 +203,7 @@ async function checkWords(){
 }
 
 
-
+//Board Class
 function sum(arr){
   let sum = 0;
   for(let i =0; i < arr.length;i++){
@@ -208,29 +212,13 @@ function sum(arr){
   return sum
 }
 
-
-function star(x, y, radius1, radius2, npoints) {
-  let angle = TWO_PI / npoints;
-  let halfAngle = angle / 2.0;
-  beginShape();
-  for (let a = 0; a < TWO_PI; a += angle) {
-    let sx = x + cos(a) * radius2;
-    let sy = y + sin(a) * radius2;
-    vertex(sx, sy);
-    sx = x + cos(a + halfAngle) * radius1;
-    sy = y + sin(a + halfAngle) * radius1;
-    vertex(sx, sy);
-  }
-  endShape(CLOSE);
-}
-
+//Board Class
 function isGameOver(){
 	return sum(letterCounts) == 0;
 	
 }
 
 function makeLetter(i){
-	print("is the game over?");
 	print(isGameOver());
 	let rndNum = int(random(27));
 	while(letterCounts[rndNum] <= 0){
@@ -242,27 +230,27 @@ function makeLetter(i){
 
 }
 
-
+//Game Server Class
 function openServer(){
 	ifServer = true;
-turn = [1];
-peer.on('open', function(id) {
-	console.log('My peer ID is: ' + id);
-	ID = id;
-	el = createElement('h2',url.split("?")[0] + "?" + ID);
-	el.position(20, 5);
-});
-		peer.on('connection', function(c) {
-			clients.push(c);
-			recieveData(c);
-			scores.push(0);
-			turn.push(0);
-			names.push(c.peer);
-			print(c.peer + " connected with me"); 
-		});		
+	turn = [1];
+	peer.on('open', function(id) {
+		console.log('My peer ID is: ' + id);
+		ID = id;
+		el = createElement('h2',url.split("?")[0] + "?" + ID);
+		el.position(20, 5);
+	});
+	peer.on('connection', function(c) {
+		clients.push(c);
+		recieveData(c);
+		scores.push(0);
+		turn.push(0);
+		names.push(c.peer);
+		print(c.peer + " connected with me"); 
+	});		
 }
 
-
+//Player Class
 function openClient(){
 	ifServer = false;
 		peer.on('open', function(){
@@ -337,7 +325,7 @@ function openClient(){
 }
 
 
-
+//GameServer
 function sendDataToClients(){
 	for(let i = 0; i < clients.length; i++){
 		//print("ran");
@@ -346,13 +334,13 @@ function sendDataToClients(){
 	}
 }
 
-
+//Player
 function sendDataToServer(){
 	//print("sent to server");
 	server.send(JSON.stringify({letterCounts,turn,scores,tiles}));
 }
 
-
+//GameServer
 function startGame(){
 	//make my letters
 	for(let i = 0;i<7;i++){
@@ -374,6 +362,7 @@ function startGame(){
 
 }
 
+//Master Game Class
 function setName(){
   myName = input.value();
   input.value('');
@@ -393,7 +382,7 @@ function setName(){
 
 }
 
-
+//Master Game and Board class
 function setup() {
 //resolve networking
   input = createInput();
@@ -472,30 +461,33 @@ function setup() {
 	}
 }
 
+//Board Class
 function onBoard(posX,posY){
 	return posX > 50 && posX < 650 && posY > 50 && posY < 650;
 }
 
+//Board Class
 function getTilePosition(posX, posY){
 	let tileNum = [Math.floor((posX-padding)/tileSize),Math.floor((posY-padding)/tileSize)];
 	return tileNum;	
 }
 
+//Board Class
 function getTileNumber(position){
 	return position[1]*15+position[0]; 
 }
-
+//Player Class
 function getLetterNum(posX,posY){
 	tilePos = getTilePosition(posX,posY);
 	return tilePos[0]-4;
 }
-
+//Board Class
 function isLetter(posX,posY){
 		tilePos = getTilePosition(posX,posY);
 		return tilePos[1] == 15 && tilePos[0] > 3 && tilePos[0] < 11;
 }
 
-
+//Board Class
 function validPlacement(tileNum){
         let c1 = tiles[tileNum+1].letter != null;
         let c2 = tiles[tileNum-1].letter != null;
@@ -517,7 +509,7 @@ function validPlacement(tileNum){
 
 }
 
-
+//Player Class
 function mousePressed(){
 //	print(mouseX,mouseY);
 
@@ -555,7 +547,7 @@ function mousePressed(){
 	}
 }
 
-
+//Player Class
 function getDataFromServer(){
 	server.on('data',function(data){
 		let json = JSON.parse(data);
@@ -633,7 +625,7 @@ function getDataFromClient(){
 }
 
 
-
+//Master Game Class
 function draw() {
   background(220);
   //fill(219, 212, 195);
