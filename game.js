@@ -15,16 +15,16 @@ let myPos = 0;
 let myName;
 let names = [];
 //---------------
+let tileSize = 40;
 let myLetters  = [];
-let namePos = [[150,675],[0,150],[150,25],[650,150]];
-let scoresPos = [[100,675],[0,100],[100,25],[650,100]];
+let namePos = [[2,17],[0,4],[4,1],[16,4]];
+let scoresPos = [[1,17],[0,3],[3,1],[16,3]];
 let allLetters = ' abcdefghijklmnopqrstuvwxyz';
 let letterPoints = [0,1,3,3,2,1,4,2,4,1,8,5,1,3,1,1,3,10,1,1,1,1,4,4,8,4,10]
 let myScore = 0;
 let tempScore = 0;
 let checking = false;
-let padding = 50;
-let tileSize = 40;
+let padding = 40;
 let selectedLetter = null;
 let endTurnButton;
 let dictionary = [];
@@ -32,6 +32,7 @@ let tilesChanged = [];
 let lettersUsed = [];
 let url;
 var peer;
+
 
 //resets tiles if word is wrong
 function resetTiles(){
@@ -230,8 +231,8 @@ function isGameOver(){
 }
 
 function makeLetter(i){
-	print("is the game over?");
-	print(isGameOver());
+	//print("is the game over?");
+	//print(isGameOver());
 	let rndNum = int(random(27));
 	while(letterCounts[rndNum] <= 0){
 		rndNum = int(random(27));
@@ -283,7 +284,7 @@ function openClient(){
 			server.on('data', function(data){
 				//start client game
 				let json = JSON.parse(data);
-				print(json);
+				//print(json);
 				let otherLetters = json.otherLetters;
 				let otherNames = json.names;
 				if(otherLetters){
@@ -319,7 +320,7 @@ function openClient(){
 		
 					}
 				}
-		print(turn);
+		//print(turn);
 		if(turn && turn[myPos] == 1){
 			endTurnButton.show();	
 		}else{	
@@ -393,6 +394,17 @@ function setName(){
 
 }
 
+function windowResized() {
+	resizeCanvas(windowHeight-200, windowHeight-200);
+	cx = (windowWidth - width) / 2;
+	cy = (windowHeight - height) / 2;
+	cnv.position(cx, cy);
+	endTurnButton.position(cx+width,cy+height);
+	tileSize = width/17;
+	padding = tileSize;
+
+}
+
 
 function setup() {
 //resolve networking
@@ -401,12 +413,14 @@ function setup() {
   button = createButton('submit');
   button.position(input.x + input.width, 65);
   button.mousePressed(setName);
-  cnv = createCanvas(700, 700);
+  cnv = createCanvas(windowHeight-200,windowHeight-200);
   cx = (windowWidth - width) / 2;
   cy = (windowHeight - height) / 2;
   cnv.position(cx, cy);
+  tileSize = (width)/17;
+  padding = tileSize;
   endTurnButton = createButton('end turn');
-  endTurnButton.position(cx+50+(40*4)+(40* 10),655+cy);
+  endTurnButton.position(cx+width,cy+height);
   endTurnButton.mousePressed(checkWords);
   endTurnButton.hide();
 
@@ -416,6 +430,8 @@ function setup() {
   	startGameBtn.mousePressed(startGame);
   }
 
+
+  
 //making letters
 
 //  print(letterCounts);
@@ -473,7 +489,8 @@ function setup() {
 }
 
 function onBoard(posX,posY){
-	return posX > 50 && posX < 650 && posY > 50 && posY < 650;
+	print(posX,tileSize,posY,tileSize*15);
+	return posX > tileSize && posX < tileSize*15 && posY > tileSize && posY < tileSize*15;
 }
 
 function getTilePosition(posX, posY){
@@ -492,6 +509,7 @@ function getLetterNum(posX,posY){
 
 function isLetter(posX,posY){
 		tilePos = getTilePosition(posX,posY);
+		//print(tilePos);
 		return tilePos[1] == 15 && tilePos[0] > 3 && tilePos[0] < 11;
 }
 
@@ -523,7 +541,7 @@ function mousePressed(){
 
 	if(onBoard(mouseX,mouseY) && turn && turn[myPos] == 1 && !checking){
 		//placing letter
-//		print("on board");
+		print("on board");
 		tilePos = getTilePosition(mouseX,mouseY);
 		tileNum = getTileNumber(tilePos);
 		if(selectedLetter != null && tiles[tileNum].letter == null && validPlacement(tileNum)){
@@ -561,7 +579,7 @@ function getDataFromServer(){
 		let json = JSON.parse(data);
 		turn = json.turn;
 		//print("run");
-		print(json);
+		//print(json);
 		letterCounts = json.letterCounts;
 		scores = json.scores;
 		myPos = json.i+1;
@@ -588,7 +606,7 @@ function recieveData(conn){
 			turn = json.turn;
 			letterCounts = json.letterCounts;
 			scores = json.scores;
-			print(json);
+			//print(json);
 			if(json.tiles){
 				for(let i = 0; i < json.tiles.length; i++){
 					if(json.tiles[i].letter){
@@ -637,11 +655,11 @@ function getDataFromClient(){
 function draw() {
   background(220);
   //fill(219, 212, 195);
-	if(server){
-//		getDataFromServer();
-	}else{
-	//	getDataFromClient();
-	}
+// 	if(server){
+// //		getDataFromServer();
+// 	}else{
+// 	//	getDataFromClient();
+// 	}
 	for(let i = 0; i < tiles.length;i++){
 		tiles[i].draw(padding,tileSize);
 	}
@@ -651,25 +669,27 @@ function draw() {
 
   for(let i = 0; i < myLetters.length; i++){
   	fill(219, 212, 195);
-//    rect(50+(40*4)+(40* i),655,40,40);//my letters
     
-	rect(5,50+(40*4)+(40* i),40,40);  
-    rect(655,50+(40*4)+(40* i),40,40);  
-    rect(50+(40*4)+(40* i),5,40,40);
+	rect(0*tileSize,(i+5)*tileSize,tileSize,tileSize);  
+    rect(tileSize*16,(i+5)*tileSize,tileSize,tileSize);  
+    rect((i+5)*tileSize,0*tileSize,tileSize,tileSize);
+	rect((this.number+5)*tileSize,16*tileSize,tileSize,tileSize);
+
 	if(myLetters[i]){
-		myLetters[i].draw();
+		myLetters[i].draw(tileSize);
 	}
-	textSize(32);
+	textSize(tileSize);
   }
-	textSize(32);
-	text(myScore, 50+(40*4)+(40* 8),685);
+	textSize(tileSize);
+	text(myScore, padding+(tileSize*4)+(tileSize* 8),tileSize*17);
 	
 
 
 	if(selectedLetter != null){
 		selectedLetter.highlight();
 	}
-	textSize(20);
+	textSize(tileSize);
+	angleMode(DEGREES);
 	for(let i = 0; i < names.length;i++){
 		//print(scores,myPos);
 		if(turn[(i+myPos)%turn.length] == 1){
@@ -677,9 +697,20 @@ function draw() {
 		}else{
 			fill(0,0,0);
 		}
-		text(names[i],namePos[i][0],namePos[i][1]);	
+		
+		if(i % 2 == 1){
+			push();
+			translate(namePos[i][0]*tileSize+tileSize/4,namePos[i][1]*tileSize);
+			rotate(90);
+			text(names[i], 0,0);
+			pop();
+		}else{
+			text(names[i],namePos[i][0]*tileSize,namePos[i][1]*tileSize-tileSize/4);	
+		}
+
+
 		fill(0,0,0);
-		text(scores[(i+myPos)%scores.length],scoresPos[i][0],scoresPos[i][1]);	
+		text(scores[(i+myPos)%scores.length],scoresPos[i][0]*tileSize,scoresPos[i][1]*tileSize);	
 
 	}
 

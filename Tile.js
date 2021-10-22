@@ -14,10 +14,10 @@ class Tile{
 		rect(this.posX*size+padding,this.posY*size+padding,size,size);
 		if(this.letter != null){
 			fill(0,0,0);
-    		textSize(32);
-			text(this.letter.letter,this.posX*size+padding+5,this.posY*size+padding+40-10);
-		    textSize(10);
-			text(this.letter.point,this.posX*size+padding+27,this.posY*size+padding+40-5);
+			textSize(size);
+			text(this.letter.letter,this.posX*size+padding + size/10,(this.posY*size+padding)+size/1.25);
+		    textSize(size/3);
+			text(this.letter.point,this.posX*size+padding+ size*3/4,(this.posY + 2)*size);
 		}
 	}
 
